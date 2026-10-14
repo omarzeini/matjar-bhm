@@ -1,0 +1,13 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui;
+}
+
+:root {
+  --primary-bg: #008000;
+  --secondary-bg: #03b800;
+  --light-text: white;
+  --dark-text: black;
+}
