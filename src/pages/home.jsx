@@ -22,6 +22,10 @@ const ProductsWrapper = styled.section`
 const Home = () => {
     const { products, isLoading, error } = useProducts();
 
+    if(error) {
+        console.log(error)
+    }
+
     return (
         <Main>
             <Header />

@@ -4,7 +4,9 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("VITE_SUPABASE_URL and VITE_SUPABASE_KEY must be configured.");
+  throw new Error(
+    "VITE_SUPABASE_URL and VITE_SUPABASE_KEY must be configured.",
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
@@ -37,7 +39,10 @@ export const getProductById = async (id) => {
 };
 
 const uploadImage = async (image) => {
-  const extension = image.name.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "");
+  const extension = image.name
+    .split(".")
+    .pop()
+    ?.replace(/[^a-zA-Z0-9]/g, "");
   const fileName = `${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
   const { data, error } = await supabase.storage
     .from("products")
