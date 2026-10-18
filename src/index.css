@@ -16,3 +16,11 @@
 body {
   background-color: #EEF0EA;
 }
+
+@media (min-width: 800px) {
+  body {
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+}

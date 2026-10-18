@@ -1,5 +1,7 @@
 import styled from "styled-components";
-import sugarBag from "../images/sugarBag.avif";
+import { useParams } from "react-router-dom";
+import useProduct from "../hooks/useProduct";
+import { getProductIdFromSlug } from "../utils/productRoute";
 
 const ProductContainer = styled.main`
   width: 100%;
@@ -14,6 +16,10 @@ const ProductContainer = styled.main`
   direction: auto;
 `;
 
+const Message = styled.p`
+  padding: 24px;
+`;
+
 const ImageFigure = styled.figure`
   width: 100%;
   height: 55%;
@@ -24,8 +30,14 @@ const ImageFigure = styled.figure`
   & img {
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: contain;
   }
+
+   @media (min-width: 768px) {
+      & img {
+        object-fit: contain;
+      }
+    }
 `;
 
 const DetailsContainer = styled.div`
@@ -97,7 +109,7 @@ const StockStatus = styled.div`
 
   position: absolute;
   left: 30px;
-  top: 25px;
+  top: 30px;
 `;
 
 const WaButton = styled.div`
@@ -114,58 +126,50 @@ const WaButton = styled.div`
   bottom: 20px;
   left: 50%;
   transform: translate(-50%);
-`;
-
-const InstockTag = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #166534;
-  background-color: #dcfce7;
-  border: 1px solid #bbf7d0;
-  border-radius: 9999px;
-  width: fit-content;
-`;
-
-const StatusTag = styled.span`
-  width: 7px;
-  height: 7px;
-  background-color: #22c55e;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+  cursor: pointer;
+  border-bottom: 4px solid #116b4d;
 `;
 
 const ProductPage = () => {
+  const { slugAndId } = useParams();
+  const productId = getProductIdFromSlug(slugAndId);
+  const { product, isLoading, error } = useProduct(productId);
+
+  if (isLoading) {
+    return <Message>جاري تحميل المنتج...</Message>;
+  }
+
+  if (error) {
+    return <Message role="alert">تعذر تحميل المنتج: {error.message}</Message>;
+  }
+
+  if (!product) {
+    return <Message>هذا المنتج غير موجود.</Message>;
+  }
+
   return (
     <ProductContainer>
       <ImageFigure>
-        <img src={sugarBag} alt="product-image" loading="lazy" />
+        {product.image_url && (
+          <img src={product.image_url} alt={product.name} loading="lazy" />
+        )}
       </ImageFigure>
 
       <DetailsContainer dir="auto">
-        <StockStatus dir="auto">متوفر</StockStatus>
+        <StockStatus dir="auto">
+          {product.in_stock ? "متوفر" : "غير متوفر"}
+        </StockStatus>
 
-        {/* <InstockTag>
-  <StatusTag ></StatusTag>
-  In Stock
-</InstockTag> */}
-
-        <Title>السكر</Title>
+        <Title>{product.name}</Title>
 
         <TextContainer>
-          <p className="description">
-            حقائب 50كلغ من السكر الأبيض مستورد من البرازيل
-          </p>
+          {product.description && (
+            <p className="description">{product.description}</p>
+          )}
+          <p>{product.price}</p>
         </TextContainer>
 
-        <WaButton dir="auto">راسلنا على الواتساب</WaButton>
+        <WaButton dir="auto">تواصل معنا</WaButton>
       </DetailsContainer>
     </ProductContainer>
   );

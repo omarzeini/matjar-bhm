@@ -1,4 +1,5 @@
 import styled from "styled-components"
+import IconImg from "../../images/icon.svg"
 
 const Container = styled.header `
     width: 100%;
@@ -11,6 +12,7 @@ const Container = styled.header `
     flex-direction: column;
     gap: 5px;
     corner-shape: squircle;
+    position: relative;
 `
 
 const Heading = styled.h2`
@@ -33,7 +35,7 @@ const SearchForm = styled.form`
     margin-top: 1rem;
 
     &:focus-within {
-        border: 2px solid brown;
+        border: 2px solid green;
     }
 `
 
@@ -49,20 +51,33 @@ const SearchInput = styled.input`
     outline: none;
 `
 
+const LogoImage = styled.img`
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 25px;
+    left: 15px;
+    border: 1px solid gold;
+    border-radius: 10px;
+`
+
 const Header = () => {
     return (
-        <Container>
-            <Heading $light>
-              Matjar BHM
+        <Container dir="auto">
+            <Heading $light dir="auto">
+              متجري
             </Heading>
-            <Paragraph $light>
-                Find out the currently availble goods
+            <Paragraph $light dir="auto">
+               تعرف على بضاعاتنا
             </Paragraph>
+
+            <LogoImage  src={IconImg} alt="" />
 
             <SearchForm>
                 <SearchInput
+                     dir="rtl"
                      type="search"
-                     placeholder="search goods"
+                     placeholder="ابحث عن بضاعة معينة"
                  >
 
                 </SearchInput>
