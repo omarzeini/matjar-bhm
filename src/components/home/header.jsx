@@ -13,6 +13,7 @@ const Container = styled.header `
     gap: 5px;
     corner-shape: squircle;
     position: relative;
+    box-sizing: border-box;
 `
 
 const Heading = styled.h2`
@@ -33,6 +34,7 @@ const SearchForm = styled.form`
     padding: 10px;
     border-radius: 10px;
     margin-top: 1rem;
+    box-sizing: border-box;
 
     &:focus-within {
         border: 2px solid green;
@@ -49,6 +51,7 @@ const SearchInput = styled.input`
     background-color: transparent;
     border: none;
     outline: none;
+    box-sizing: border-box;
 `
 
 const LogoImage = styled.img`

@@ -9,10 +9,11 @@
   --dark-primary-bg: #0F3D2E;
   --primary-bg: #008000;
   --secondary-bg: #03b800;
+  --body-bg: #EEF0EA;
   --light-text: white;
   --dark-text: black;
 }
-
+ 
 body {
   background-color: #EEF0EA;
 }

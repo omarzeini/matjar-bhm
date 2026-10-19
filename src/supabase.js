@@ -66,13 +66,7 @@ export const uploadProduct = async (product, image) => {
   if (!product.name?.trim()) {
     throw new Error("Product name is required.");
   }
-  if (
-    product.price === "" ||
-    product.price == null ||
-    !Number.isFinite(Number(product.price))
-  ) {
-    throw new Error("A valid product price is required.");
-  }
+
   if (typeof product.in_stock !== "boolean") {
     throw new Error("Product stock status must be provided.");
   }
@@ -81,7 +75,7 @@ export const uploadProduct = async (product, image) => {
   const productRow = {
     name: product.name.trim(),
     description: product.description || null,
-    price: Number(product.price),
+    price: Number(product.price) || null,
     category: product.category || null,
     image_url: uploadedImage?.imageUrl ?? product.image_url ?? null,
     in_stock: product.in_stock,

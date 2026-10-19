@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 import ProductPage from "./pages/product-page.jsx";
+import Login from "./pages/Admin/login.jsx"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -11,6 +12,7 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/product/:slugAndId" element={<ProductPage />} />
+        <Route path="login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

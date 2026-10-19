@@ -10,10 +10,13 @@ const Main = styled.main`
 
 const ProductsWrapper = styled.section`
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: start;
-    flex-wrap: wrap;
+    // display: flex;
+    // justify-content: center;
+    // align-items: start;
+    // flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    place-items: center;
     gap: 20px;
     padding: 10px;
     padding-top: 50px;

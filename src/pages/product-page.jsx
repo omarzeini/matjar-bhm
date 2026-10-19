@@ -14,6 +14,7 @@ const ProductContainer = styled.main`
   // background-color: #e3e7de;
   background-color: white;
   direction: auto;
+  box-sizing: border-box;
 `;
 
 const Message = styled.p`
@@ -106,10 +107,11 @@ const StockStatus = styled.div`
   align-items: center;
   background-color: #dcfce7;
   border: 1px solid #bbf7d0;
+  font-weight: 600;
 
   position: absolute;
   left: 30px;
-  top: 30px;
+  top: 25px;
 `;
 
 const WaButton = styled.div`
@@ -155,7 +157,7 @@ const ProductPage = () => {
         )}
       </ImageFigure>
 
-      <DetailsContainer dir="auto">
+      <DetailsContainer dir="rtl">
         <StockStatus dir="auto">
           {product.in_stock ? "متوفر" : "غير متوفر"}
         </StockStatus>
