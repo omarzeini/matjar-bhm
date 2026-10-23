@@ -43,10 +43,11 @@ const uploadImage = async (image) => {
     .split(".")
     .pop()
     ?.replace(/[^a-zA-Z0-9]/g, "");
-  const fileName = `${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
+  const filePath = `products/${Date.now()}-${file.name}`;
+  //const fileName = `${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
   const { data, error } = await supabase.storage
     .from("products")
-    .upload(fileName, image, {
+    .upload(filePath, image, {
       contentType: image.type || "application/octet-stream",
       upsert: false,
     });

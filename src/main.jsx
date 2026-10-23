@@ -4,7 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 import ProductPage from "./pages/product-page.jsx";
-import Login from "./pages/Admin/login.jsx"
+import Login from "./pages/Admin/login.jsx";
+import Dashboard from "./pages/Admin/dashboard.jsx"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,6 +14,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/" element={<App />} />
         <Route path="/product/:slugAndId" element={<ProductPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

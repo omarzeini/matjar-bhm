@@ -2,6 +2,7 @@ import styled from "styled-components";
 import Header from "../components/home/header";
 import ProductCard from "../components/home/productCard";
 import useProducts from "../hooks/useProducts";
+import { useNavigate } from "react-router-dom";
 
 const Main = styled.main`
     width: 100%;
@@ -25,6 +26,8 @@ const ProductsWrapper = styled.section`
 const Home = () => {
     const { products, isLoading, error } = useProducts();
 
+    const navigate = useNavigate()
+
     if(error) {
         console.log(error)
     }
@@ -34,7 +37,10 @@ const Home = () => {
             <Header />
 
             <ProductsWrapper>
-                {isLoading && <p>جاري تحميل المنتجات...</p>}
+                {isLoading && <p>
+                  ...جاري تحميل المنتجات
+                    
+                    </p>}
                 {error && <p role="alert">تعذر تحميل المنتجات: {error.message}</p>}
                 {!isLoading && !error && products.length === 0 && (
                     <p>لا توجد منتجات متاحة حاليا.</p>
@@ -43,6 +49,9 @@ const Home = () => {
                     <ProductCard key={product.id} product={product} />
                 ))}
             </ProductsWrapper>
+
+            <button onClick={() => navigate("/dashboard")}>dashbaord</button>
+            <button onClick={() => navigate("/login")}>login</button>
         </Main>
     )
 }
