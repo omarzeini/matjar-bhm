@@ -1,7 +1,12 @@
 import styled from "styled-components";
 import BackArrow from "../../icons/back-arrow";
 import useProducts from "../../hooks/useProducts";
-import { useState } from "react";
+import useUploadProduct from "../../hooks/useUploadProduct";
+import { useState, useEffect } from "react";
+import { supabase, uploadImage } from "../../supabase";
+
+//COMPONENTS
+import DeleteModal from "../../components/dashboard/deleteModal";
 
 // ICONS
 import Plus from "../../icons/plus";
@@ -65,6 +70,7 @@ const ProductsWrapper = styled.div`
   justify-content: center;
   align-items: center;
   gap: 15px;
+  padding-bottom: 40px;
 `;
 const ProductCard = styled.div`
   min-width: 100%;
@@ -72,6 +78,7 @@ const ProductCard = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   padding: 10px;
   corner-shape: squircle;
   border-radius: 15px;
@@ -87,6 +94,8 @@ const ContentBlock = styled.div`
 const ImageFigure = styled.figure`
   width: 60px;
   height: 60px;
+  min-width: 60px;
+  min-height: 60px;
   border-radius: 15px;
   background-color: #d3d4d1;
 
@@ -242,38 +251,105 @@ const SubmitButton = styled.button`
 `;
 
 const PreviewImage = styled.img`
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
-    corner-shape: squircle;
-    object-fit: cover;
-`
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  corner-shape: squircle;
+  object-fit: cover;
+`;
 
 const Dashboard = () => {
   const [openFrom, setOpenForm] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
+  const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [inStock, setInStock] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(true);
+  const [editProductId, setEditProductId] = useState(null);
+  const [loadingEditProduct, setLoadingEditProdut] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   const navigate = useNavigate();
 
-  const { products, isLoading, error } = useProducts();
+  const { products, isLoading, error, refetch } = useProducts();
+  const { upload, isUploading, error: uploadError } = useUploadProduct();
 
+  const cleanUpForm = () => {
+    setName("");
+    setDesc("");
+    setImageUrl(null);
+    setInStock(true);
+    setIsEditMode(false);
+    setOpenForm(false);
+  };
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
+    setImage(file);
 
-    try{
-          const url = URL.createObjectURL(file);
-    setImageUrl(url);
-    }catch(err){
-            console.log("Error converting to url: ", err)
-
-    }finally {
-        URL.revokeObjectURL(file);
+    try {
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+    } catch (err) {
+      console.log("Error converting to url: ", err);
+    } finally {
+      URL.revokeObjectURL(file);
     }
-  
-}
+  };
+
+  const handleUploadProduct = async (product, image) => {
+    if (!product.name || product.name === "") {
+      return;
+    }
+
+    console.log(image);
+
+    try {
+      await upload(product, image);
+      setOpenForm(false);
+      await refetch();
+      console.log("Product Posted.");
+      setName("");
+      setDesc("");
+      setImageUrl(null);
+      setInStock(true);
+    } catch (err) {
+      console.log("Error uploading product: ", uploadError || err);
+    }
+  };
+
+  const handleEditProduct = async (product, image) => {
+    if (!editProductId) return;
+
+    if (image) {
+      const uploadedImage = (await uploadImage(image)) || null;
+      const url = uploadedImage.imageUrl || "";
+      product.image_url = url;
+    }
+
+    try {
+      setLoadingEditProdut(true);
+      const { error } = await supabase
+        .from("products")
+        .update(product)
+        .eq("id", editProductId);
+      if (error) {
+        throw error;
+      }
+
+      console.log("Product updated successfully");
+      cleanUpForm();
+      await refetch();
+    } catch (err) {
+      console.log("Error updating product: ", err);
+    } finally {
+      setLoadingEditProdut(false);
+      setEditProductId(null);
+    }
+  };
 
   return (
     <Main dir="rtl">
@@ -309,25 +385,72 @@ const Dashboard = () => {
                     <img src={product.image_url} />
                   : ""}
                 </ImageFigure>
-                <ProductName> {product.name} </ProductName>
+                <ProductName>
+                  {" "}
+                  {product.name.length > 7 ?
+                    product.name.slice(0, 7) + "..."
+                  : product.name}{" "}
+                </ProductName>
               </ContentBlock>
 
               <ContentBlock>
-                <EditButton dir="rtl">تعديل</EditButton>
-                <DeleteButton dir="rtl">حذف</DeleteButton>
+                <EditButton
+                  onClick={() => {
+                    setName(product.name);
+                    setDesc(product?.description || "");
+                    setImageUrl(product?.image_url || null);
+                    setInStock(product.in_stock);
+                    setOpenForm(true);
+                    setIsEditMode(true);
+                    setEditProductId(product.id);
+                  }}
+                  dir="rtl"
+                >
+                  تعديل
+                </EditButton>
+
+                <DeleteButton
+                  onClick={() => {
+                    setSelectedProductId(product.id);
+                    setShowOverlay(true);
+                    setShowDeleteModal(true);
+                  }}
+                  dir="rtl"
+                >
+                  حذف
+                </DeleteButton>
               </ContentBlock>
             </ProductCard>
           ))
         }
       </ProductsWrapper>
 
-      <Overlay $isOpen={openFrom ? true : false} />
+      {showDeleteModal && selectedProductId ?
+        <DeleteModal
+          productId={selectedProductId}
+          refetch={refetch}
+          setSelectedProductId={setSelectedProductId}
+          setShowDeleteModal={setShowDeleteModal}
+          setShowOverlay={setShowOverlay}
+        />
+      : null}
+
+      <Overlay $isOpen={openFrom || showOverlay ? true : false} />
 
       <ProductForm
         onSubmit={(e) => e.preventDefault()}
         $isOpen={openFrom ? true : false}
       >
-        <CloseIconContainer onClick={() => setOpenForm(false)}>
+        <CloseIconContainer
+          onClick={() => {
+            setName("");
+            setDesc("");
+            setImageUrl(null);
+            setInStock(true);
+            setOpenForm(false);
+            setIsEditMode(false);
+          }}
+        >
           <Close width={"25px"} height={"25px"} color={"gray"} />
         </CloseIconContainer>
 
@@ -347,13 +470,21 @@ const Dashboard = () => {
           dir="rtl"
         />
 
-        <ImageInput type="file" id="product-image-input" onChange={(e) => handleFileUpload(e)}  />
+        <ImageInput
+          type="file"
+          id="product-image-input"
+          onChange={(e) => handleFileUpload(e)}
+        />
 
         <ImageInputLabel htmlFor="product-image-input">
-            {imageUrl ? <PreviewImage src={imageUrl}  /> :  <ImageIcon width={"60px"} height={"60px"} color={"gray"} /> }
-          
+          {imageUrl ?
+            <PreviewImage src={imageUrl} />
+          : <ImageIcon width={"60px"} height={"60px"} color={"gray"} />}
 
-          <p style={{ color: "gray" }}> {imageUrl ? "إنقر لتغيير الصورة" : "إنقر لإضافة صورة البضاعة"} </p>
+          <p style={{ color: "gray" }}>
+            {" "}
+            {imageUrl ? "إنقر لتغيير الصورة" : "إنقر لإضافة صورة البضاعة"}{" "}
+          </p>
         </ImageInputLabel>
 
         <RadioContainer>
@@ -368,7 +499,33 @@ const Dashboard = () => {
           </label>
         </RadioContainer>
 
-        <SubmitButton>إضافة</SubmitButton>
+        <SubmitButton
+          disabled={isUploading || loadingEditProduct ? true : false}
+          $grey={isUploading ? true : false}
+          type="submit"
+          onClick={() => {
+            if (!isEditMode) {
+              handleUploadProduct(
+                { name, description: desc, in_stock: inStock },
+                image,
+              );
+            } else {
+              handleEditProduct(
+                { name, description: desc, in_stock: inStock },
+                image,
+              );
+            }
+          }}
+        >
+          {" "}
+          {isUploading || loadingEditProduct ?
+            isEditMode ?
+              "جارٍ حفظ التعديلات…"
+            : "جارٍ إضافة المنتج…"
+          : isEditMode ?
+            "حفظ التعديلات"
+          : "إضافة"}
+        </SubmitButton>
       </ProductForm>
     </Main>
   );

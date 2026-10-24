@@ -45,12 +45,14 @@ const DetailsContainer = styled.div`
   width: 100%;
   flex: 1;
   min-height: 0;
+  overflow: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
   padding: 20px;
   padding-top: 30px;
+  padding-bottom: 90px;
   direction: auto;
   background-color: white;
   box-shadow: 0 -1px 18px rgba(0, 0, 0, 0.12);
@@ -92,10 +94,11 @@ const TextContainer = styled.div`
 const Title = styled.p`
   font-weight: 600;
   font-size: 1.5rem;
+  max-width: 70%;
 `;
 
 const StockStatus = styled.div`
-  width: 80px;
+  width: fit-content;
   padding-block: 5px;
   padding-inline: 15px;
   //background-color: var(--primary-bg);
@@ -124,8 +127,8 @@ const WaButton = styled.div`
   background-color: var(--primary-bg);
   color: gold;
   border-radius: 10px;
-  position: absolute;
-  bottom: 20px;
+  position: fixed;
+  bottom: 50px;
   left: 50%;
   transform: translate(-50%);
   cursor: pointer;

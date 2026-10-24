@@ -38,13 +38,12 @@ export const getProductById = async (id) => {
   return data;
 };
 
-const uploadImage = async (image) => {
+export const uploadImage = async (image) => {
   const extension = image.name
     .split(".")
     .pop()
     ?.replace(/[^a-zA-Z0-9]/g, "");
-  const filePath = `products/${Date.now()}-${file.name}`;
-  //const fileName = `${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
+  const filePath = `products/${Date.now()}${extension ? `.${extension}` : ""}`;
   const { data, error } = await supabase.storage
     .from("products")
     .upload(filePath, image, {

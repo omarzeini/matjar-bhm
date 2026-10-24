@@ -27,7 +27,7 @@ const ImageFigure = styled.figure`
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: cover;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
   }
@@ -75,10 +75,10 @@ const StockStatus = styled.div`
   color: gold;
   border: 1px solid #bbf7d0;
 
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%);
-    bottom: 10px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%);
+  bottom: 10px;
 `;
 
 const ProductCard = ({ product }) => {
@@ -86,15 +86,18 @@ const ProductCard = ({ product }) => {
     <ProductContainer>
       <Link to={getProductPath(product)}>
         <ImageFigure>
-          {product.image_url ? (
+          {product.image_url ?
             <img src={product.image_url} alt={product.name} loading="lazy" />
-          ) : (
-            <div className="image-placeholder">لا توجد صورة</div>
-          )}
+          : <div className="image-placeholder">لا توجد صورة</div>}
         </ImageFigure>
 
         <TextContainer dir="auto">
-          <p className="title">{product.name}</p>
+          <p className="title">
+            {" "}
+            {product.name.length > 15 ?
+              product.name.slice(0, 15) + "..."
+            : product.name}
+          </p>
           <StockStatus>{product.in_stock ? "متوفر" : "غير متوفر"}</StockStatus>
         </TextContainer>
       </Link>
