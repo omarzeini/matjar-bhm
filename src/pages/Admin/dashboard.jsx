@@ -2,7 +2,8 @@ import styled from "styled-components";
 import BackArrow from "../../icons/back-arrow";
 import useProducts from "../../hooks/useProducts";
 import useUploadProduct from "../../hooks/useUploadProduct";
-import { useState, useEffect } from "react";
+import useClickOutside from "../../hooks/useClickOutside";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, uploadImage } from "../../supabase";
 
 //COMPONENTS
@@ -22,6 +23,7 @@ const Main = styled.main`
   flex-direction: column;
   padding: 10px;
   padding-top: 30px;
+  padding-bottom: 100px;
   gap: 10px;
 `;
 
@@ -200,19 +202,41 @@ const TextArea = styled.textarea`
 `;
 
 const ImageInputLabel = styled.label`
-  width: 90%;
+  width: 100%;
   border-radius: 10px;
   padding: 10px;
   border: 1px solid gray;
   background-color: white;
   font-size: 1.1rem;
-  height: 80px;
+  min-height: 80px;
 
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 30px;
   cursor: pointer;
+`;
+const ImageUploadContainer = styled.div`
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+const ImageActions = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+const ImageActionButton = styled.button`
+  padding: 8px 14px;
+  border: 1px solid #d3d4d1;
+  border-radius: 8px;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+`;
+const RemoveImageButton = styled(ImageActionButton)`
+  color: #c62828;
+  border-color: #c62828;
 `;
 const ImageInput = styled.input`
   position: absolute;
@@ -272,32 +296,56 @@ const Dashboard = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [showOverlay, setShowOverlay] = useState(false);
+  const productFormRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const localImageUrlRef = useRef(null);
 
   const navigate = useNavigate();
 
   const { products, isLoading, error, refetch } = useProducts();
   const { upload, isUploading, error: uploadError } = useUploadProduct();
 
-  const cleanUpForm = () => {
+  const clearLocalImageUrl = useCallback(() => {
+    if (localImageUrlRef.current) {
+      URL.revokeObjectURL(localImageUrlRef.current);
+      localImageUrlRef.current = null;
+    }
+  }, []);
+
+  const cleanUpForm = useCallback(() => {
+    clearLocalImageUrl();
     setName("");
     setDesc("");
+    setImage(null);
     setImageUrl(null);
     setInStock(true);
     setIsEditMode(false);
+    setEditProductId(null);
     setOpenForm(false);
-  };
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  }, [clearLocalImageUrl]);
+
+  useClickOutside(productFormRef, cleanUpForm, openFrom);
+
+  useEffect(
+    () => () => {
+      clearLocalImageUrl();
+    },
+    [clearLocalImageUrl],
+  );
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    setImage(file);
+    if (!file) return;
 
-    try {
-      const url = URL.createObjectURL(file);
-      setImageUrl(url);
-    } catch (err) {
-      console.log("Error converting to url: ", err);
-    } finally {
-      URL.revokeObjectURL(file);
-    }
+    clearLocalImageUrl();
+    setImage(file);
+    const url = URL.createObjectURL(file);
+    localImageUrlRef.current = url;
+    setImageUrl(url);
   };
 
   const handleUploadProduct = async (product, image) => {
@@ -305,7 +353,7 @@ const Dashboard = () => {
       return;
     }
 
-    console.log(image);
+    //console.log(image);
 
     try {
       await upload(product, image);
@@ -314,8 +362,13 @@ const Dashboard = () => {
       console.log("Product Posted.");
       setName("");
       setDesc("");
+      setImage(null);
       setImageUrl(null);
       setInStock(true);
+      clearLocalImageUrl();
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
     } catch (err) {
       console.log("Error uploading product: ", uploadError || err);
     }
@@ -324,17 +377,19 @@ const Dashboard = () => {
   const handleEditProduct = async (product, image) => {
     if (!editProductId) return;
 
-    if (image) {
-      const uploadedImage = (await uploadImage(image)) || null;
-      const url = uploadedImage.imageUrl || "";
-      product.image_url = url;
-    }
-
     try {
       setLoadingEditProdut(true);
+      const updatedProduct = { ...product };
+      if (image) {
+        const uploadedImage = await uploadImage(image);
+        updatedProduct.image_url = uploadedImage.imageUrl;
+      } else {
+        updatedProduct.image_url = imageUrl;
+      }
+
       const { error } = await supabase
         .from("products")
-        .update(product)
+        .update(updatedProduct)
         .eq("id", editProductId);
       if (error) {
         throw error;
@@ -347,7 +402,6 @@ const Dashboard = () => {
       console.log("Error updating product: ", err);
     } finally {
       setLoadingEditProdut(false);
-      setEditProductId(null);
     }
   };
 
@@ -398,7 +452,12 @@ const Dashboard = () => {
                   onClick={() => {
                     setName(product.name);
                     setDesc(product?.description || "");
+                    setImage(null);
                     setImageUrl(product?.image_url || null);
+                    clearLocalImageUrl();
+                    if (imageInputRef.current) {
+                      imageInputRef.current.value = "";
+                    }
                     setInStock(product.in_stock);
                     setOpenForm(true);
                     setIsEditMode(true);
@@ -438,19 +497,11 @@ const Dashboard = () => {
       <Overlay $isOpen={openFrom || showOverlay ? true : false} />
 
       <ProductForm
+        ref={productFormRef}
         onSubmit={(e) => e.preventDefault()}
         $isOpen={openFrom ? true : false}
       >
-        <CloseIconContainer
-          onClick={() => {
-            setName("");
-            setDesc("");
-            setImageUrl(null);
-            setInStock(true);
-            setOpenForm(false);
-            setIsEditMode(false);
-          }}
-        >
+        <CloseIconContainer onClick={cleanUpForm}>
           <Close width={"25px"} height={"25px"} color={"gray"} />
         </CloseIconContainer>
 
@@ -471,21 +522,46 @@ const Dashboard = () => {
         />
 
         <ImageInput
+          ref={imageInputRef}
           type="file"
           id="product-image-input"
           onChange={(e) => handleFileUpload(e)}
         />
 
-        <ImageInputLabel htmlFor="product-image-input">
-          {imageUrl ?
-            <PreviewImage src={imageUrl} />
-          : <ImageIcon width={"60px"} height={"60px"} color={"gray"} />}
+        <ImageUploadContainer>
+          <ImageInputLabel htmlFor="product-image-input">
+            {imageUrl ?
+              <PreviewImage src={imageUrl} />
+            : <ImageIcon width={"60px"} height={"60px"} color={"gray"} />}
 
-          <p style={{ color: "gray" }}>
-            {" "}
-            {imageUrl ? "إنقر لتغيير الصورة" : "إنقر لإضافة صورة البضاعة"}{" "}
-          </p>
-        </ImageInputLabel>
+            <p style={{ color: "gray" }}>
+              {imageUrl ? "الصورة الحالية" : "إنقر لإضافة صورة البضاعة"}
+            </p>
+          </ImageInputLabel>
+          {imageUrl && (
+            <ImageActions>
+              <ImageActionButton
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+              >
+                تغيير الصورة
+              </ImageActionButton>
+              <RemoveImageButton
+                type="button"
+                onClick={() => {
+                  clearLocalImageUrl();
+                  setImage(null);
+                  setImageUrl(null);
+                  if (imageInputRef.current) {
+                    imageInputRef.current.value = "";
+                  }
+                }}
+              >
+                إزالة الصورة
+              </RemoveImageButton>
+            </ImageActions>
+          )}
+        </ImageUploadContainer>
 
         <RadioContainer>
           <InstockSwitcher

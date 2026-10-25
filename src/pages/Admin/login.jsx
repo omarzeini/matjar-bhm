@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import BackArrow from "../../icons/back-arrow";
 import { supabase } from "../../supabase";
-import { replace, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 const LoginForm = styled.form`
   width: 100%;
@@ -64,6 +64,7 @@ const Login = () => {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignin = async (email, password) => {
     if (!email || !password) {
@@ -82,7 +83,9 @@ const Login = () => {
         throw error;
       }
 
-      navigate("/", { replace: true });
+      navigate(location.state?.from?.pathname || "/dashboard", {
+        replace: true,
+      });
     } catch (err) {
       console.log("Error signing in: ", err.message || err);
       setError(`خطأ في تسجيل الدخول. يرجى التأكد من البريد و كلمة المرور`);

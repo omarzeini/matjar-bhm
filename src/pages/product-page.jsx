@@ -1,7 +1,8 @@
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useProduct from "../hooks/useProduct";
 import { getProductIdFromSlug } from "../utils/productRoute";
+import BackArrow from "../icons/back-arrow";
 
 const ProductContainer = styled.main`
   width: 100%;
@@ -15,6 +16,20 @@ const ProductContainer = styled.main`
   background-color: white;
   direction: auto;
   box-sizing: border-box;
+  position: relative;
+`;
+
+const ArrowContainer = styled.span`
+  cursor: pointer;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: #ffffff7e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  padding: 5px;
 `;
 
 const Message = styled.p`
@@ -26,19 +41,19 @@ const ImageFigure = styled.figure`
   height: 55%;
   flex-shrink: 0;
   margin: 0;
-  border-radius: 15px;
+  //border-radius: 15px;
 
   & img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
-   @media (min-width: 768px) {
-      & img {
-        object-fit: contain;
-      }
+  @media (min-width: 768px) {
+    & img {
+      object-fit: contain;
     }
+  }
 `;
 
 const DetailsContainer = styled.div`
@@ -128,7 +143,7 @@ const WaButton = styled.div`
   color: gold;
   border-radius: 10px;
   position: fixed;
-  bottom: 50px;
+  bottom: 140px;
   left: 50%;
   transform: translate(-50%);
   cursor: pointer;
@@ -140,12 +155,14 @@ const ProductPage = () => {
   const productId = getProductIdFromSlug(slugAndId);
   const { product, isLoading, error } = useProduct(productId);
 
+  const navigate = useNavigate();
+
   if (isLoading) {
     return <Message>جاري تحميل المنتج...</Message>;
   }
 
   if (error) {
-    return <Message role="alert">تعذر تحميل المنتج: {error.message}</Message>;
+    return <Message role="alert">تعذر تحميل المنتج: {error}</Message>;
   }
 
   if (!product) {
@@ -154,6 +171,10 @@ const ProductPage = () => {
 
   return (
     <ProductContainer>
+      <ArrowContainer onClick={() => navigate(-1)}>
+        <BackArrow width={"40px"} height={"40px"} color={"black"} />
+      </ArrowContainer>
+
       <ImageFigure>
         {product.image_url && (
           <img src={product.image_url} alt={product.name} loading="lazy" />

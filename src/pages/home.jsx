@@ -2,11 +2,11 @@ import styled from "styled-components";
 import Header from "../components/home/header";
 import ProductCard from "../components/home/productCard";
 import useProducts from "../hooks/useProducts";
-import { useNavigate } from "react-router-dom";
 
 const Main = styled.main`
     width: 100%;
-    height: 100dvh;
+    min-height: 100dvh;
+    padding-bottom: 100px;
 `
 
 const ProductsWrapper = styled.section`
@@ -25,8 +25,6 @@ const ProductsWrapper = styled.section`
 
 const Home = () => {
     const { products, isLoading, error } = useProducts();
-
-    const navigate = useNavigate()
 
     if(error) {
         console.log(error)
@@ -50,8 +48,6 @@ const Home = () => {
                 ))}
             </ProductsWrapper>
 
-            <button onClick={() => navigate("/dashboard")}>dashbaord</button>
-            <button onClick={() => navigate("/login")}>login</button>
         </Main>
     )
 }
