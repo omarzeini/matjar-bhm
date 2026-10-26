@@ -34,6 +34,10 @@ const ArrowContainer = styled.span`
 
 const Message = styled.p`
   padding: 24px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const ImageFigure = styled.figure`
@@ -132,7 +136,7 @@ const StockStatus = styled.div`
   top: 25px;
 `;
 
-const WaButton = styled.div`
+const WaButton = styled.a`
   width: 80%;
   display: flex;
   justify-content: center;
@@ -148,6 +152,12 @@ const WaButton = styled.div`
   transform: translate(-50%);
   cursor: pointer;
   border-bottom: 4px solid #116b4d;
+  text-decoration: none;
+
+  @media (min-width: 768px) {
+    position: absolute;
+    bottom: 40px;
+  }
 `;
 
 const ProductPage = () => {
@@ -156,9 +166,11 @@ const ProductPage = () => {
   const { product, isLoading, error } = useProduct(productId);
 
   const navigate = useNavigate();
+  const waLink = (text) =>
+    `https://wa.me/212647183385?text=${encodeURIComponent(text)}`;
 
   if (isLoading) {
-    return <Message>جاري تحميل المنتج...</Message>;
+    return <Message>...جاري تحميل المنتج </Message>;
   }
 
   if (error) {
@@ -195,7 +207,14 @@ const ProductPage = () => {
           <p>{product.price}</p>
         </TextContainer>
 
-        <WaButton dir="auto">تواصل معنا</WaButton>
+        <WaButton
+          href={waLink(
+            `hello can i wanna know more about your ${product.name}`,
+          )}
+          dir="auto"
+        >
+          تواصل معنا
+        </WaButton>
       </DetailsContainer>
     </ProductContainer>
   );

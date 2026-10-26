@@ -6,16 +6,17 @@
 }
 
 :root {
-  --dark-primary-bg: #0F3D2E;
+  --dark-primary-bg: #0f3d2e;
   --primary-bg: #008000;
   --secondary-bg: #03b800;
-  --body-bg: #EEF0EA;
+  --light-primary: #e9f3ed;
+  --body-bg: #eef0ea;
   --light-text: white;
   --dark-text: black;
 }
- 
+
 body {
-  background-color: #EEF0EA;
+  background-color: #eef0ea;
 }
 
 @media (min-width: 800px) {
@@ -23,5 +24,4 @@ body {
     width: 60%;
     margin: 0 auto;
   }
-  
 }
