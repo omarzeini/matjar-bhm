@@ -69,7 +69,7 @@ const LogoImage = styled.img`
   border-radius: 10px;
 `;
 
-const Header = () => {
+const Header = ({ searchQuery, setSearchQuery, onSearchSubmit }) => {
   return (
     <Container dir="auto">
       <Heading $light dir="auto">
@@ -81,12 +81,19 @@ const Header = () => {
 
       <LogoImage src={IconImg} alt="" />
 
-      <SearchForm>
+      <SearchForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSearchSubmit();
+        }}
+      >
         <SearchInput
           dir="rtl"
           type="search"
           placeholder="ابحث عن بضاعة معينة"
-        ></SearchInput>
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </SearchForm>
     </Container>
   );

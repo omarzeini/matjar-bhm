@@ -4,6 +4,7 @@ import Feed from "../icons/feed";
 import Admin from "../icons/admin";
 import Company from "../icons/company";
 import { supabase } from "../supabase";
+import { GooeyToaster, gooeyToast } from "goey-toast";
 
 const Navbar = styled.nav`
   position: fixed;
@@ -103,31 +104,35 @@ const BottomNavbar = () => {
       navigate(session ? "/dashboard" : "/login");
     } catch (error) {
       console.error("Unable to check the admin session:", error);
+      gooeyToast.error("تعذر التحقق من تسجيل الدخول", { displayDuration: 500 });
     }
   };
 
   return (
-    <Navbar aria-label="التنقل الرئيسي">
-      <NavItem to="/" end>
-        <Feed width="22" height="22" color="currentColor" />
-        <span>الرئيسية</span>
-      </NavItem>
+    <>
+      <GooeyToaster position="top-center" />
+      <Navbar aria-label="التنقل الرئيسي">
+        <NavItem to="/" end>
+          <Feed width="22" height="22" color="currentColor" />
+          <span>الرئيسية</span>
+        </NavItem>
 
-      <NavItem to="/company">
-        <Company width="22" height="22" color="currentColor" />
-        <span>الشركة</span>
-      </NavItem>
+        <NavItem to="/company">
+          <Company width="22" height="22" color="currentColor" />
+          <span>الشركة</span>
+        </NavItem>
 
-      <AdminNavButton
-        type="button"
-        $active={isAdminActive}
-        aria-current={isAdminActive ? "page" : undefined}
-        onClick={openAdmin}
-      >
-        <Admin width="22" height="22" color="currentColor" />
-        <span>الإدارة</span>
-      </AdminNavButton>
-    </Navbar>
+        <AdminNavButton
+          type="button"
+          $active={isAdminActive}
+          aria-current={isAdminActive ? "page" : undefined}
+          onClick={openAdmin}
+        >
+          <Admin width="22" height="22" color="currentColor" />
+          <span>الإدارة</span>
+        </AdminNavButton>
+      </Navbar>
+    </>
   );
 };
 

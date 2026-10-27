@@ -1,19 +1,21 @@
 import styled from "styled-components";
-import BackArrow from "../../icons/back-arrow";
 import useProducts from "../../hooks/useProducts";
 import useUploadProduct from "../../hooks/useUploadProduct";
 import useClickOutside from "../../hooks/useClickOutside";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, uploadImage } from "../../supabase";
+import { useNavigate } from "react-router-dom";
+import { GooeyToaster, gooeyToast } from "goey-toast";
 
 //COMPONENTS
 import DeleteModal from "../../components/dashboard/deleteModal";
 
 // ICONS
+import BackArrow from "../../icons/back-arrow";
 import Plus from "../../icons/plus";
 import Close from "../../icons/close";
 import ImageIcon from "../../icons/image";
-import { useNavigate } from "react-router-dom";
+import SignoutIcon from "../../icons/signout";
 
 const Main = styled.main`
   width: 100%;
@@ -30,8 +32,30 @@ const Main = styled.main`
 const TopContainer = styled.div`
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  padding: 10px;
+`;
+
+const SignOutButton = styled.button`
+  width: 100%;
+  height: fit-content;
+  padding: 8px 15px;
+  border-radius: 10px;
+  background-color: transparent;
+  border: 1px solid var(--primary-bg);
+  color: var(--primary-bg);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  opacity: 1;
+
+  &:disabled {
+    opacity: 0.5;
+  }
 `;
 
 const ArrowContainer = styled.span`
@@ -62,6 +86,18 @@ const AddProductButton = styled.button`
   &:active {
     scale: 0.9;
   }
+`;
+
+const SearchInput = styled.input`
+  width: 90%;
+  height: 50px;
+  margin: 0 auto;
+  padding: 10px 15px;
+  border: 1px solid gray;
+  border-radius: 10px;
+  background-color: white;
+  font-size: 1rem;
+  outline: none;
 `;
 
 const ProductsWrapper = styled.div`
@@ -289,13 +325,14 @@ const Dashboard = () => {
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [inStock, setInStock] = useState(true);
-  const [isEditMode, setIsEditMode] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
   const [loadingEditProduct, setLoadingEditProdut] = useState(false);
-  const [user, setUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const productFormRef = useRef(null);
   const imageInputRef = useRef(null);
   const localImageUrlRef = useRef(null);
@@ -304,6 +341,9 @@ const Dashboard = () => {
 
   const { products, isLoading, error, refetch } = useProducts();
   const { upload, isUploading, error: uploadError } = useUploadProduct();
+  const filteredProducts = products.filter((product) =>
+    product.name?.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+  );
 
   const clearLocalImageUrl = useCallback(() => {
     if (localImageUrlRef.current) {
@@ -349,7 +389,8 @@ const Dashboard = () => {
   };
 
   const handleUploadProduct = async (product, image) => {
-    if (!product.name || product.name === "") {
+    if (!product.name || product.name.trim() === "") {
+      gooeyToast.error("يرجى إدخال اسم البضاعة", { displayDuration: 500 });
       return;
     }
 
@@ -359,6 +400,7 @@ const Dashboard = () => {
       await upload(product, image);
       setOpenForm(false);
       await refetch();
+      gooeyToast.success("تمت إضافة البضاعة بنجاح", { displayDuration: 500 });
       console.log("Product Posted.");
       setName("");
       setDesc("");
@@ -371,6 +413,9 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.log("Error uploading product: ", uploadError || err);
+      gooeyToast.error(uploadError?.message || "تعذرت إضافة البضاعة", {
+        displayDuration: 500,
+      });
     }
   };
 
@@ -397,31 +442,76 @@ const Dashboard = () => {
 
       console.log("Product updated successfully");
       cleanUpForm();
+      gooeyToast.success("تم تعديل البضاعة بنجاح", {
+        displayDuration: 500,
+      });
       await refetch();
     } catch (err) {
       console.log("Error updating product: ", err);
+      gooeyToast.error("تعذر تعديل البضاعة", { displayDuration: 500 });
     } finally {
       setLoadingEditProdut(false);
     }
   };
 
+  const signOut = async () => {
+    try {
+      setIsSigningOut(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+      gooeyToast.success("تم تسجيل الخروج بنجاح", { displayDuration: 500 });
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.log(`Error signing out: ${err}`);
+      gooeyToast.error("تعذر تسجيل الخروج", { displayDuration: 500 });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
   return (
     <Main dir="rtl">
+      <GooeyToaster position="top-center" />
       <TopContainer dir="rtl">
-        <Heading dir="rtl">إدارة البضائع</Heading>
+        {/* <Heading dir="rtl">إدارة البضائع</Heading>
         <ArrowContainer onClick={() => navigate(-1)}>
           <BackArrow
             width={"40px"}
             height={"40px"}
             color={"var(--dark-primary-bg)"}
           />
-        </ArrowContainer>
+        </ArrowContainer> */}
+        <SignOutButton disabled={isSigningOut} onClick={signOut} dir="rtl">
+          {isSigningOut ? "تسجيل الخروج…" : " تسجيل الخروج"}
+
+          <SignoutIcon
+            width={"30px"}
+            height={"30px"}
+            color={"var(--primary-bg)"}
+          />
+        </SignOutButton>
       </TopContainer>
 
-      <AddProductButton onClick={() => setOpenForm(true)} dir="rtl">
+      <AddProductButton
+        onClick={() => {
+          setOpenForm(true);
+        }}
+        dir="rtl"
+      >
         أضف بضاعة
         <Plus width={"30px"} height={"30px"} color={"white"} />
       </AddProductButton>
+
+      <SearchInput
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        type="search"
+        placeholder="ابحث عن بضاعة"
+        dir="rtl"
+        aria-label="البحث عن بضاعة"
+      />
 
       <ProductsWrapper>
         {isLoading ?
@@ -431,7 +521,11 @@ const Dashboard = () => {
           </p>
         : error ?
           <p>an error occured {error}</p>
-        : products.map((product) => (
+        : filteredProducts.length === 0 ?
+          <p style={{ textAlign: "center" }} dir="rtl">
+            لا توجد بضائع مطابقة للبحث
+          </p>
+        : filteredProducts.map((product) => (
             <ProductCard key={product.id}>
               <ContentBlock>
                 <ImageFigure>

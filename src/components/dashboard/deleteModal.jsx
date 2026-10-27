@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { supabase } from "../../supabase";
+import { gooeyToast, GooeyToaster } from "goey-toast";
 
 const Container = styled.div`
   width: 80%;
@@ -100,10 +101,12 @@ const DeleteModal = ({
       }
 
       await refetch();
+      gooeyToast.success("تم حذف البضاعة بنجاح", { displayDuration: 500 });
       console.log("Product deleted");
       closeModal();
     } catch (err) {
       console.log("Error deleting product: ", err);
+      gooeyToast.error("تعذر حذف البضاعة", { displayDuration: 500 });
       setDeleteError(
         err instanceof Error ? err.message : "تعذر حذف البضاعة. حاول مرة أخرى.",
       );
@@ -114,14 +117,12 @@ const DeleteModal = ({
 
   return (
     <Container dir="rtl">
+      <GooeyToaster position={"top-center"} />
       <Heading dir="rtl">حذف البضاعة</Heading>
       <Paragraph dir="rtl">هل أنت متأكد من حذف هذه البضاعة ؟</Paragraph>
 
       <ButtonsContainer dir="rtl">
-        <CancelButton
-          onClick={closeModal}
-          dir="rtl"
-        >
+        <CancelButton onClick={closeModal} dir="rtl">
           إلغاء
         </CancelButton>
         <DeleteButton

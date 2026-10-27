@@ -7,7 +7,7 @@ import BackArrow from "../icons/back-arrow";
 const ProductContainer = styled.main`
   width: 100%;
   height: 100dvh;
-  border-radius: 15px;
+  // border-radius: 15px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -45,7 +45,6 @@ const ImageFigure = styled.figure`
   height: 55%;
   flex-shrink: 0;
   margin: 0;
-  //border-radius: 15px;
 
   & img {
     width: 100%;

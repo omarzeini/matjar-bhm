@@ -3,6 +3,7 @@ import BackArrow from "../../icons/back-arrow";
 import { supabase } from "../../supabase";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { GooeyToaster, gooeyToast } from "goey-toast";
 const LoginForm = styled.form`
   width: 100%;
   height: fit-content;
@@ -68,7 +69,9 @@ const Login = () => {
 
   const handleSignin = async (email, password) => {
     if (!email || !password) {
-      setError("يرجى إدخال كلمة المرور و البريد إلكتروني");
+      const message = "يرجى إدخال كلمة المرور و البريد إلكتروني";
+      setError(message);
+      gooeyToast.error(message, { displayDuration: 500 });
       return;
     }
     try {
@@ -83,12 +86,15 @@ const Login = () => {
         throw error;
       }
 
+      gooeyToast.success("تم تسجيل الدخول بنجاح", { displayDuration: 500 });
       navigate(location.state?.from?.pathname || "/dashboard", {
         replace: true,
       });
     } catch (err) {
       console.log("Error signing in: ", err.message || err);
-      setError(`خطأ في تسجيل الدخول. يرجى التأكد من البريد و كلمة المرور`);
+      const message = "خطأ في تسجيل الدخول. يرجى التأكد من البريد و كلمة المرور";
+      setError(message);
+      gooeyToast.error(message, { displayDuration: 500 });
       // UI Error dispaly
     } finally {
       setSigningIn(false);
@@ -97,6 +103,7 @@ const Login = () => {
 
   return (
     <LoginForm dir="rtl" onSubmit={(e) => e.preventDefault()}>
+      <GooeyToaster position="top-center" />
       <ArrowContainer onClick={() => navigate(-1)}>
         <BackArrow
           width={"40px"}

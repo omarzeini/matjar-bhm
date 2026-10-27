@@ -79,7 +79,7 @@ const InfoContainer = styled.div`
 `;
 
 const InfoCard = styled.div`
-  width: 90%;
+  width: 100%;
   height: fit-content;
   min-height: 80px;
   border-radius: 10px;
