@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "goey-toast/styles.css";
 import "./index.css";
 import App from "./App.jsx";
-import Home from "./pages/Home.jsx";
+import Home from "./pages/home-page.jsx";
 import ProductPage from "./pages/product-page.jsx";
 import Login from "./pages/Admin/login.jsx";
 import Dashboard from "./pages/Admin/dashboard.jsx";
