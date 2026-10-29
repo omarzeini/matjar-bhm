@@ -1,0 +1,51 @@
+RELEASE CHECKLIST
+
+CRITICAL
+[ ] Remove tracked .env files and secrets from Git history when required.
+[ ] Add .env and environment-specific files to .gitignore; keep a safe .env.example.
+[ ] Verify Supabase Row-Level Security allows public reads and authenticated admin writes only.
+[ ] Verify Storage upload and delete policies for authenticated admins.
+[ ] Delete Storage images when their product is deleted.
+[ ] Remove or replace old Storage images when a product image is changed.
+[ ] Add product price editing to the dashboard.
+[ ] Add image type and maximum-size validation before upload.
+[ ] Fix login form submission so pressing Enter signs the user in.
+[ ] Add the missing 192px and 512px PWA icons, or correct the manifest paths.
+[ ] Decide whether offline support needs a service worker; the manifest alone does not provide offline caching.
+
+RELIABILITY
+[ ] Resolve all lint errors and warnings.
+[ ] Remove unused imports, components, and styles.
+[ ] Prevent duplicate product requests or add shared request cancellation/deduplication.
+[ ] Derive filtered products directly instead of synchronizing them through effects.
+[ ] Add a 404 route for unknown URLs.
+[ ] Add loading, empty, error, and retry states for all network-dependent screens.
+[ ] Cancel or ignore stale async state updates when users leave a page.
+
+DASHBOARD
+[ ] Verify product creation, editing, deletion, and image removal end to end.
+[ ] Disable repeated actions while requests are in progress.
+[ ] Confirm validation for name, price, description, image, and stock status.
+[ ] Refresh product data consistently after every successful mutation.
+[ ] Test dashboard behavior on slow and offline connections.
+
+USER EXPERIENCE
+[ ] Set the document language to Arabic.
+[ ] Add accurate page title and meta description.
+[ ] Add Open Graph metadata for shared links.
+[ ] Add product-specific page titles.
+[ ] Add meaningful alt text for product, company, and dashboard images.
+[ ] Centralize WhatsApp and phone numbers in one configuration module.
+[ ] Verify the displayed phone number formatting.
+[ ] Remove development console output before release.
+[ ] Verify keyboard navigation, focus states, form labels, and modal behavior.
+[ ] Test mobile and desktop layouts for overlap and fixed navigation/button positions.
+
+DEPLOYMENT
+[ ] Configure production Supabase environment variables.
+[ ] Verify SPA fallback redirects are configured on the hosting provider.
+[ ] Run lint and production build successfully.
+[ ] Test the production build, not only the Vite development server.
+[ ] Test public routes, product routes, login, logout, and dashboard authorization.
+[ ] Test with a newly signed-in admin and an existing authenticated session.
+[ ] Back up the production database and Storage configuration.

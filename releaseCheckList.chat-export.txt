@@ -1,0 +1,181 @@
+I’ll do a release-readiness pass across routing, auth, data fetching, forms, user-facing states, and build configuration. I’ll prioritize findings by severity and keep “nice to have” items separate from launch blockers.
+
+Read 
+
+Read 
+
+Read 
+
+Read 
+
+Read 
+
+The core hooks look structurally sound, but I’ve already identified one high-risk area to inspect: duplicate fetching and stale/error states around navigation and mutations. Next I’m tracing the router, Supabase rules/client configuration, auth guard, and dashboard mutation flow; I’ll also run lint and build to surface concrete defects.
+
+Ran terminal command: npm run lint
+Completed with input: npm run lint
+Tool execution failed with exit code 1
+
+Ran terminal command: npm run build
+
+Read 
+
+Read 
+
+Read 
+
+Read 
+
+The production build passes, but lint is not clean: several hooks violate the current React rules, and the dashboard has unused imports/styles. I’m continuing into the mutation and page flows now, because lint only catches a fraction of release risks such as orphaned image files, deletes, invalid routes, and mobile navigation behavior.
+
+Searched for files matching `**/{.env*,.gitignore,manifest.webmanifest,_redirects}`, 4 matches
+
+Read 
+
+Read , lines 150 to 280
+
+Read 
+
+Read 
+
+Read 
+
+I’ve also confirmed the app has PWA metadata, but several defaults still look template-level (`lang="en"` while the UI is Arabic, generic metadata, and icon references that need checking). I’m doing one final pass for missing public assets, hard-coded contact details, TODOs, console debugging, broken route fallbacks, and image lifecycle issues before I rank the findings.
+
+Ran terminal command: Get-Item public/favicon.svg, public/pwa-icon-192.svg -ErrorAction SilentlyContinue | Select-Object Name,Length; git status --short
+
+Read 
+
+Searched for regex `TODO|FIXME|console\.log|212647183385|localhost|example|href="#` (`**/src/**`), 11 results
+
+Read 
+
+Read 
+
+Read 
+
+Ran terminal command: git ls-files .env; git check-ignore -v .env ; true; Select-String -Path src/pages/Admin/dashboard.jsx -Pattern "remove\(|storage|image_url|delete"
+
+Checked , no problems found
+
+Read , lines 580 to 720
+
+Read , lines 130 to 180
+
+Read 
+
+This pass has surfaced two release-critical operational issues: `.env` is currently tracked in Git, and deleting a product does not delete its Storage object, so the Supabase bucket will accumulate orphaned images. I’m checking the remaining form submit/storage behavior and the exact `.env` tracking state, then I’ll give you an actionable launch checklist instead of making speculative changes.
+
+Ran terminal command: git ls-files --error-unmatch .env; git check-ignore -v .env; git status --short
+
+Searched for regex `handleUploadProduct\(|handleEditProduct\(|submit|Save|حفظ` (`**/src/pages/Admin/dashboard.jsx`), 18 results
+
+Read , lines 720 to 760
+
+Read 
+
+**Release Readiness Review**
+
+The production build succeeds, but there are several things I would address before handing it to the client.
+
+**Critical Before Launch**
+
+1. **`.env` is tracked by Git**
+   - `.env` appears in Git.
+   - It should be ignored and likely remain untracked.
+   - Confirm it contains only browser-safe Supabase values, never a service-role key.
+   - Add `.env` and `.env.*` to `.gitignore`, while keeping `.env.example` tracked.
+
+2. **Verify Supabase Row-Level Security**
+   - Public users should only be able to read products.
+   - Only authenticated admins should insert, update, or delete.
+   - Storage upload/delete permissions should match the same restriction.
+   - Do not rely on hiding the dashboard alone for authorization.
+
+3. **Product image cleanup is missing**
+   - Replaced images remain in Storage.
+   - Deleted products leave their images behind.
+   - Removing an image during editing does not remove the old object.
+   - Storage will gradually accumulate orphaned files.
+
+4. **PWA assets are incomplete**
+   - The manifest references `pwa-icon-192.svg` and `pwa-icon-512.svg`, but those files are not present.
+   - Only `.ico` versions exist.
+   - Either add correctly sized PNG/SVG assets or correct the manifest.
+   - The app has no service worker registration, so it is not actually offering the offline caching implied by the PWA setup.
+
+**Data And Admin Issues**
+
+5. **Dashboard cannot manage product price**
+   - Price exists in the database and is displayed on the product page.
+   - The dashboard form does not currently include a price input.
+   - New and edited products will therefore receive `null` as their price.
+
+6. **Image validation is missing**
+   - The dashboard accepts any selected file with no size or MIME validation.
+   - Large files may make uploads slow or exhaust Storage limits.
+   - Add `accept="image/*"` and reject unsupported or oversized files before upload.
+
+7. **Product deletion modal does not verify storage cleanup**
+   - The database deletion is handled correctly, but related Storage cleanup needs to be part of the operation.
+
+8. **Login submission should support Enter**
+   - The form uses `onSubmit={(e) => e.preventDefault()}` without calling the sign-in handler.
+   - Pressing Enter may therefore do nothing.
+
+**Reliability And Code Quality**
+
+9. **Lint currently fails**
+   - Hook rules in `useProducts`, `useProduct`, and the home page.
+   - Unused dashboard imports and styles.
+   - The Supabase upload cleanup `AggregateError` should preserve the original error as a `cause`.
+   - These should be resolved rather than suppressed.
+
+10. **Hooks are vulnerable to duplicate requests**
+   - React Strict Mode can mount effects twice in development.
+   - `useProducts` can issue duplicate requests.
+   - Add request cancellation or centralize shared request handling.
+
+11. **There is no 404/not-found route**
+   - Invalid URLs currently display a blank route area.
+   - Add a useful fallback route and page.
+
+12. **Search state is less robust than necessary**
+   - The home page duplicates products into derived state with effects.
+   - Filtering, clearing, refetching, and submitted searches should be derived directly from the current query and product list.
+
+**User-Facing Polish**
+
+13. **Page metadata needs Arabic/PWA polish**
+   - `lang="en"` should be `lang="ar"` or dynamically localized.
+   - Add Arabic page description and Open Graph metadata.
+   - The browser title is currently only “Matjar BHM”.
+   - Add product-specific page titles where practical.
+
+14. **Accessibility needs attention**
+   - Add meaningful `alt` text for dashboard images and company media.
+   - Add button/form labels and accessible modal behavior.
+   - Trap focus or disable background interaction while the delete modal/form is open.
+   - Add keyboard handling for modal close/cancel.
+
+15. **WhatsApp and phone details should be centralized**
+   - The number appears in both the company page and product page.
+   - Store the number in one configuration module.
+   - Also verify whether the displayed `212647183385+` ordering should be `+212 647 183 385`.
+
+16. **Remove development console output**
+   - Authentication, upload, edit, delete, and sign-out paths contain `console.log`.
+   - Keep minimal production-safe logging and use error reporting for operational failures.
+
+**Recommended Order**
+
+1. Fix `.gitignore` and verify no secrets are tracked.
+2. Verify Supabase and Storage RLS policies.
+3. Add complete image cleanup.
+4. Add and validate product price editing.
+5. Fix image upload validation and login submission.
+6. Repair PWA assets/service worker.
+7. Resolve lint failures and duplicate fetching.
+8. Add the 404 route and metadata polish.
+
+The app’s overall structure is in a good place. The items above are mainly release safety, admin correctness, and low-connectivity behavior rather than a redesign.

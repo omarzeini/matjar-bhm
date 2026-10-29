@@ -1,0 +1,48 @@
+**Caching Plan**
+
+**Goal:** Keep cached products available across navigation and reloads, while limiting Supabase/API usage for users with slow internet.
+
+A good fit here is a hybrid approach:
+
+1. **Memory cache**
+   - `useProducts` keeps an in-memory array after the first successful fetch.
+   - Navigating between routes returns cached products immediately.
+   - No extra request while the app remains mounted.
+
+2. **Persistent cache**
+   - Store the products and fetch timestamp in `localStorage`.
+   - This shows products immediately on refresh, even before the network responds.
+   - Keep the cache small and invalid JSON handling defensive.
+
+3. **Background refresh**
+   - Show cached data immediately.
+   - Fetch fresh data in the background after a short delay.
+   - Keep `isLoading` false when valid cached data exists, preventing unnecessary skeletons during navigation.
+
+4. **Cache lifetime**
+   - Treat cached products as fresh for roughly 10-15 minutes.
+   - Refresh in the background after that TTL.
+   - For manual refreshes, choose an explicit action or when the app returns after being closed/backgrounded for longer than the TTL.
+
+5. **Write-through invalidation**
+   - After adding, editing, or deleting a product, update or refetch the cache.
+   - Avoid leaving stale admin actions visible to the user.
+   - The cleanest approach is to update the shared cache in `useProducts`, then `refetch()` after mutations.
+
+**Loading behavior**
+- No cache: skeleton cards.
+- Valid cache: cached cards immediately, optional silent refresh.
+- Stale cache: cached cards immediately, background refresh.
+- Refresh failure: keep displaying cached cards and show an error only in the dashboard or through a subtle retry state.
+
+**Recommended implementation order**
+
+1. Create a small product cache utility.
+2. Integrate it into `useProducts`.
+3. Add background refresh with a TTL.
+4. Update dashboard mutations to invalidate or refresh the cache.
+5. Add a refresh timestamp and manually removable cache for recovery/testing.
+6. Verify navigation, reload, edit, add, delete, offline, and slow-network behavior.
+
+**One decision before implementation**
+`localStorage` is appropriate here because the product data is already public and relatively small. For this app, I would not introduce React Query or a service worker yet. The current custom `useProducts` hook is small enough that a focused cache layer would be simpler and easier to maintain.
