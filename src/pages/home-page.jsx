@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Header from "../components/home/header";
-import ProductCard from "../components/home/productCard";
+import ProductCard, { ProductCardSkeleton } from "../components/home/productCard";
 import useProducts from "../hooks/useProducts";
 import { useEffect, useState } from "react";
 
@@ -76,7 +76,9 @@ const Home = () => {
       )}
 
       <ProductsWrapper>
-        {isLoading && <p>...جاري تحميل المنتجات</p>}
+        {isLoading && Array.from({ length: 8 }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
         {error && <p role="alert">تعذر تحميل المنتجات: {error.message}</p>}
         {!isLoading && !error && products.length === 0 && (
           <p>لا توجد منتجات متاحة حاليا.</p>

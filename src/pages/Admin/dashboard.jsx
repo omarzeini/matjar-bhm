@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import useProducts from "../../hooks/useProducts";
 import useUploadProduct from "../../hooks/useUploadProduct";
 import useClickOutside from "../../hooks/useClickOutside";
@@ -174,6 +174,62 @@ const DeleteButton = styled.button`
   color: white;
   cursor: pointer;
 `;
+
+const shimmer = keyframes`
+  100% {
+    transform: translateX(-100%);
+  }
+`;
+
+const SkeletonShape = styled.div`
+  position: relative;
+  overflow: hidden;
+  background-color: #e1e3df;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    animation: ${shimmer} 1.5s infinite;
+  }
+`;
+
+const SkeletonImage = styled(SkeletonShape)`
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  border-radius: 15px;
+`;
+
+const SkeletonName = styled(SkeletonShape)`
+  width: 100px;
+  height: 20px;
+  border-radius: 5px;
+`;
+
+const SkeletonAction = styled(SkeletonShape)`
+  width: 58px;
+  height: 28px;
+  border-radius: 8px;
+`;
+
+const ProductCardSkeleton = () => {
+  return (
+    <ProductCard aria-hidden="true">
+      <ContentBlock>
+        <SkeletonImage />
+        <SkeletonName />
+      </ContentBlock>
+
+      <ContentBlock>
+        <SkeletonAction />
+        <SkeletonAction />
+      </ContentBlock>
+    </ProductCard>
+  );
+};
 
 const Overlay = styled.div`
   width: 100%;
@@ -515,10 +571,9 @@ const Dashboard = () => {
 
       <ProductsWrapper>
         {isLoading ?
-          <p style={{ textAlign: "center" }} dir="rtl">
-            {" "}
-            جاري تحميل المنتجات...
-          </p>
+          Array.from({ length: 6 }).map((_, index) => (
+            <ProductCardSkeleton key={index} />
+          ))
         : error ?
           <p>an error occured {error}</p>
         : filteredProducts.length === 0 ?
@@ -671,7 +726,7 @@ const Dashboard = () => {
 
         <SubmitButton
           disabled={isUploading || loadingEditProduct ? true : false}
-          $grey={isUploading ? true : false}
+          $grey={isUploading || loadingEditProduct ? true : false}
           type="submit"
           onClick={() => {
             if (!isEditMode) {

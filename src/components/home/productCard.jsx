@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Link } from "react-router-dom";
 import { getProductPath } from "../../utils/productRoute";
 
@@ -10,18 +10,22 @@ const ProductContainer = styled.div`
   direction: auto;
   position: relative;
 
+
   & a {
     display: block;
     color: inherit;
     text-decoration: none;
+    width: 100%;
+    height: 100%;
   }
 `;
 
 const ImageFigure = styled.figure`
   width: 100%;
-  aspect-ratio: 1;
+  //aspect-ratio: 1;
   margin: 0;
   border-radius: 15px;
+  height: 65%;
 
   & img {
     display: block;
@@ -47,7 +51,6 @@ const TextContainer = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  margin-top: 10px;
   direction: auto;
 
   & .title {
@@ -80,6 +83,82 @@ const StockStatus = styled.div`
   transform: translate(-50%);
   bottom: 10px;
 `;
+
+const shimmer = keyframes`
+  100% {
+    transform: translateX(-100%);
+  }
+`;
+
+const SkeletonContainer = styled(ProductContainer)`
+  overflow: hidden;
+`;
+
+const SkeletonImage = styled.div`
+  width: 100%;
+  height: 65%;
+  position: relative;
+  overflow: hidden;
+  background-color: #d4d9ce;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: ${shimmer} 1.5s infinite;
+  }
+`;
+
+const SkeletonTitle = styled.div`
+  width: 75%;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  background-color: #d4d9ce;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: ${shimmer} 1.5s infinite;
+  }
+`;
+
+const SkeletonStatus = styled(StockStatus)`
+  height: 29px;
+  overflow: hidden;
+  background-color: #d4d9ce;
+  border-color: transparent;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: ${shimmer} 1.5s infinite;
+  }
+`;
+
+export const ProductCardSkeleton = () => {
+  return (
+    <SkeletonContainer dir="rtl" aria-hidden="true">
+      <SkeletonImage />
+      <TextContainer>
+        <SkeletonTitle />
+      </TextContainer>
+      <SkeletonStatus />
+    </SkeletonContainer>
+  );
+};
 
 const ProductCard = ({ product }) => {
   return (

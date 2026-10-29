@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
 import useProduct from "../hooks/useProduct";
 import { getProductIdFromSlug } from "../utils/productRoute";
@@ -159,6 +159,98 @@ const WaButton = styled.a`
   }
 `;
 
+const shimmer = keyframes`
+  100% {
+    transform: translateX(-100%);
+  }
+`;
+
+const SkeletonShape = styled.div`
+  position: relative;
+  overflow: hidden;
+  background-color: #dfe3da;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: ${shimmer} 1.5s infinite;
+  }
+`;
+
+const SkeletonImage = styled(SkeletonShape)`
+  width: 100%;
+  height: 55%;
+  flex-shrink: 0;
+  border-radius: 0;
+`;
+
+const SkeletonStatus = styled(SkeletonShape)`
+  width: 85px;
+  height: 31px;
+  border-radius: 8px;
+  position: absolute;
+  left: 30px;
+  top: 25px;
+`;
+
+const SkeletonTitle = styled(SkeletonShape)`
+  width: 70%;
+  height: 29px;
+  border-radius: 5px;
+`;
+
+const SkeletonDescription = styled(SkeletonShape)`
+  width: 100%;
+  height: 18px;
+  border-radius: 5px;
+`;
+
+const SkeletonPrice = styled(SkeletonShape)`
+  width: 80px;
+  height: 18px;
+  border-radius: 5px;
+  margin-top: 5px;
+`;
+
+const SkeletonWaButton = styled(SkeletonShape)`
+  width: 80%;
+  height: 47px;
+  border-radius: 10px;
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translate(-50%);
+
+  @media (min-width: 768px) {
+    position: absolute;
+    bottom: 40px;
+  }
+`;
+
+const ProductSkeleton = () => {
+  return (
+    <ProductContainer aria-hidden="true">
+      <SkeletonImage />
+
+      <DetailsContainer dir="rtl">
+        <SkeletonStatus />
+        <SkeletonTitle />
+
+        <TextContainer>
+          <SkeletonDescription />
+          <SkeletonDescription />
+          <SkeletonPrice />
+        </TextContainer>
+
+        <SkeletonWaButton />
+      </DetailsContainer>
+    </ProductContainer>
+  );
+};
+
 const ProductPage = () => {
   const { slugAndId } = useParams();
   const productId = getProductIdFromSlug(slugAndId);
@@ -169,7 +261,7 @@ const ProductPage = () => {
     `https://wa.me/212647183385?text=${encodeURIComponent(text)}`;
 
   if (isLoading) {
-    return <Message>...جاري تحميل المنتج </Message>;
+    return <ProductSkeleton />;
   }
 
   if (error) {
