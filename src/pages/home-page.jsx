@@ -43,6 +43,10 @@ const Home = () => {
     setFilteredProducts(products);
   }, [products]);
 
+  useEffect(() => {
+    if (searchQuery === "") setFilteredProducts(products);
+  }, [searchQuery]);
+
   const onSearchSubmit = () => {
     const newProducts = products.filter((product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()),
