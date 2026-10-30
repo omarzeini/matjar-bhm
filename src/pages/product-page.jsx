@@ -175,7 +175,12 @@ const SkeletonShape = styled.div`
     position: absolute;
     inset: 0;
     transform: translateX(100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
     animation: ${shimmer} 1.5s infinite;
   }
 `;
@@ -299,9 +304,7 @@ const ProductPage = () => {
         </TextContainer>
 
         <WaButton
-          href={waLink(
-            `hello can i wanna know more about your ${product.name}`,
-          )}
+          href={waLink(`مرحبا أريد الاستفسار عن ${product.name}`)}
           dir="auto"
         >
           تواصل معنا

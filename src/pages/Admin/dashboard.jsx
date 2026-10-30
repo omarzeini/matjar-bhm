@@ -578,7 +578,7 @@ const Dashboard = () => {
           <p>an error occured {error}</p>
         : filteredProducts.length === 0 ?
           <p style={{ textAlign: "center" }} dir="rtl">
-            لا توجد بضائع مطابقة للبحث
+            لا توجد بضائع 
           </p>
         : filteredProducts.map((product) => (
             <ProductCard key={product.id}>
