@@ -263,7 +263,7 @@ const ProductPage = () => {
 
   const navigate = useNavigate();
   const waLink = (text) =>
-    `https://wa.me/212647183385?text=${encodeURIComponent(text)}`;
+    `https://wa.me/22226190729?text=${encodeURIComponent(text)}`;
 
   if (isLoading) {
     return <ProductSkeleton />;
