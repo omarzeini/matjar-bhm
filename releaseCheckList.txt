@@ -7,7 +7,6 @@ CRITICAL
 [ ] Verify Storage upload and delete policies for authenticated admins.
 [ ] Delete Storage images when their product is deleted.
 [ ] Remove or replace old Storage images when a product image is changed.
-[ ] Add product price editing to the dashboard.
 [ ] Add image type and maximum-size validation before upload.
 [ ] Fix login form submission so pressing Enter signs the user in.
 [ ] Add the missing 192px and 512px PWA icons, or correct the manifest paths.

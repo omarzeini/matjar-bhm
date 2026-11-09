@@ -176,7 +176,12 @@ const SkeletonShape = styled.div`
     position: absolute;
     inset: 0;
     transform: translateX(100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
     animation: ${shimmer} 1.5s infinite;
   }
 `;
@@ -259,7 +264,7 @@ const ProductPage = () => {
 
   const navigate = useNavigate();
   const waLink = (text) =>
-    `https://wa.me/212647183385?text=${encodeURIComponent(text)}`;
+    `https://wa.me/22226190729?text=${encodeURIComponent(text)}`;
 
   useEffect(() => {
     window.scrollTo({top: 0, left: 0});
@@ -304,9 +309,7 @@ const ProductPage = () => {
         </TextContainer>
 
         <WaButton
-          href={waLink(
-            `hello can i wanna know more about your ${product.name}`,
-          )}
+          href={waLink(`مرحبا أريد الاستفسار عن ${product.name}`)}
           dir="auto"
         >
           تواصل معنا

@@ -270,6 +270,10 @@ const ProductForm = styled.form`
   transition:
     transform 0.3s ease,
     visibility 0s linear ${(props) => (props.$isOpen ? "0s" : "0.3s")};
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const CloseIconContainer = styled.div`
@@ -295,7 +299,7 @@ const TextArea = styled.textarea`
   border: 1px solid gray;
   background-color: white;
   font-size: 1.1rem;
-  height: 80px;
+  min-height: 80px;
 `;
 
 const ImageInputLabel = styled.label`
@@ -689,7 +693,7 @@ const Dashboard = () => {
           <p>an error occured {error}</p>
         ) : filteredProducts.length === 0 ? (
           <p style={{ textAlign: "center" }} dir="rtl">
-            لا توجد بضائع مطابقة للبحث
+            لا توجد بضائع
           </p>
         ) : (
           filteredProducts.map((product) => (
