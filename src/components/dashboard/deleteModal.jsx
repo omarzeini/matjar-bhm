@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { supabase } from "../../supabase";
+import { deleteProduct } from "../../supabase";
 import { gooeyToast, GooeyToaster } from "goey-toast";
 
 const Container = styled.div`
@@ -86,22 +86,16 @@ const DeleteModal = ({
     try {
       setIsDeleting(true);
       setDeleteError("");
-      const { data, error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", productId)
-        .select("id");
-      if (error) {
-        throw error;
-      }
-      if (!data?.length) {
-        throw new Error(
-          "No product was deleted. Check that the product exists and that the DELETE policy allows this operation.",
-        );
-      }
+      const { imageCleanupError } = await deleteProduct(productId);
 
       await refetch();
-      gooeyToast.success("تم حذف البضاعة بنجاح", { displayDuration: 500 });
+      if (imageCleanupError) {
+        gooeyToast.error("تم حذف البضاعة، لكن تعذر حذف صورتها من التخزين", {
+          displayDuration: 1500,
+        });
+      } else {
+        gooeyToast.success("تم حذف البضاعة بنجاح", { displayDuration: 500 });
+      }
       console.log("Product deleted");
       closeModal();
     } catch (err) {

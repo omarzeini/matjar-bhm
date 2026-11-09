@@ -3,7 +3,12 @@ import useProducts from "../../hooks/useProducts";
 import useUploadProduct from "../../hooks/useUploadProduct";
 import useClickOutside from "../../hooks/useClickOutside";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase, uploadImage } from "../../supabase";
+import {
+  ALLOWED_IMAGE_TYPES,
+  supabase,
+  updateProduct,
+  validateImage,
+} from "../../supabase";
 import { useNavigate } from "react-router-dom";
 import { GooeyToaster, gooeyToast } from "goey-toast";
 
@@ -11,7 +16,6 @@ import { GooeyToaster, gooeyToast } from "goey-toast";
 import DeleteModal from "../../components/dashboard/deleteModal";
 
 // ICONS
-import BackArrow from "../../icons/back-arrow";
 import Plus from "../../icons/plus";
 import Close from "../../icons/close";
 import ImageIcon from "../../icons/image";
@@ -56,10 +60,6 @@ const SignOutButton = styled.button`
   &:disabled {
     opacity: 0.5;
   }
-`;
-
-const ArrowContainer = styled.span`
-  cursor: pointer;
 `;
 
 const Heading = styled.h2`
@@ -438,11 +438,6 @@ const SignoutModal = styled.div`
   }
 `;
 
-const ErrorMessage = styled.p`
-  color: red;
-  font-size: 0.9rem;
-`;
-
 /* const DeleteButton = styled.button`
   background-color: red;
   border: none;
@@ -520,6 +515,14 @@ const Dashboard = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    try {
+      validateImage(file);
+    } catch (validationError) {
+      gooeyToast.error(validationError.message, { displayDuration: 1500 });
+      e.target.value = "";
+      return;
+    }
+
     clearLocalImageUrl();
     setImage(file);
     const url = URL.createObjectURL(file);
@@ -563,28 +566,24 @@ const Dashboard = () => {
 
     try {
       setLoadingEditProdut(true);
-      const updatedProduct = { ...product };
-      if (image) {
-        const uploadedImage = await uploadImage(image);
-        updatedProduct.image_url = uploadedImage.imageUrl;
-      } else {
-        updatedProduct.image_url = imageUrl;
-      }
+      const { imageCleanupError } = await updateProduct(
+        editProductId,
+        product,
+        image,
+        !image && !imageUrl,
+      );
 
-      const { error } = await supabase
-        .from("products")
-        .update(updatedProduct)
-        .eq("id", editProductId);
-      if (error) {
-        throw error;
-      }
-
-      console.log("Product updated successfully");
       cleanUpForm();
-      gooeyToast.success("تم تعديل البضاعة بنجاح", {
-        displayDuration: 500,
-      });
       await refetch();
+      if (imageCleanupError) {
+        gooeyToast.error("تم تعديل البضاعة، لكن تعذر حذف الصورة القديمة", {
+          displayDuration: 1500,
+        });
+      } else {
+        gooeyToast.success("تم تعديل البضاعة بنجاح", {
+          displayDuration: 500,
+        });
+      }
     } catch (err) {
       console.log("Error updating product: ", err);
       gooeyToast.error("تعذر تعديل البضاعة", { displayDuration: 500 });
@@ -787,6 +786,7 @@ const Dashboard = () => {
         <ImageInput
           ref={imageInputRef}
           type="file"
+          accept={ALLOWED_IMAGE_TYPES.join(",")}
           id="product-image-input"
           onChange={(e) => handleFileUpload(e)}
         />
