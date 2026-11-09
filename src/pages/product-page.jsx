@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useProduct from "../hooks/useProduct";
 import { getProductIdFromSlug } from "../utils/productRoute";
 import BackArrow from "../icons/back-arrow";
+import { useEffect } from "react";
 
 const ProductContainer = styled.main`
   width: 100%;
@@ -259,6 +260,10 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const waLink = (text) =>
     `https://wa.me/212647183385?text=${encodeURIComponent(text)}`;
+
+  useEffect(() => {
+    window.scrollTo({top: 0, left: 0});
+  }, [])
 
   if (isLoading) {
     return <ProductSkeleton />;

@@ -191,7 +191,12 @@ const SkeletonShape = styled.div`
     position: absolute;
     inset: 0;
     transform: translateX(100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.65),
+      transparent
+    );
     animation: ${shimmer} 1.5s infinite;
   }
 `;
@@ -374,6 +379,79 @@ const PreviewImage = styled.img`
   object-fit: cover;
 `;
 
+const SignoutModal = styled.div`
+  width: 80%;
+  height: fit-content;
+  padding: 20px;
+  border-radius: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  & .paragraph {
+    color: gray;
+    font-size: 0.9rem;
+    width: 90%;
+  }
+
+  & .buttons-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    margin-top: 1rem;
+  }
+
+  & .cancel-button {
+    background-color: transparent;
+    border: 1px solid gray;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: black;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 80px;
+  }
+
+  & .delete-button {
+    background-color: red;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 80px;
+    min-width: fit-content;
+    opacity: ${(props) => (props.$grey ? ".5" : "1")};
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: red;
+  font-size: 0.9rem;
+`;
+
+/* const DeleteButton = styled.button`
+  background-color: red;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 80px;
+  min-width: fit-content;
+  opacity: ${(props) => (props.$grey ? ".5" : "1")};
+`; */
+
 const Dashboard = () => {
   const [openFrom, setOpenForm] = useState(false);
   const [name, setName] = useState("");
@@ -387,6 +465,7 @@ const Dashboard = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showSignoutModal, setshowSignoutModal] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const productFormRef = useRef(null);
@@ -524,12 +603,37 @@ const Dashboard = () => {
       gooeyToast.error("تعذر تسجيل الخروج", { displayDuration: 500 });
     } finally {
       setIsSigningOut(false);
+      setshowSignoutModal(false);
+      setShowOverlay(false);
     }
   };
 
   return (
     <Main dir="rtl">
       <GooeyToaster position="top-center" />
+
+      {showSignoutModal && (
+        <SignoutModal>
+          <Heading>delete</Heading>
+          <p className="paragraph">Are you sure to sign out ?</p>
+
+          <div className="buttons-container">
+            <button onClick={() => {
+              setshowSignoutModal(false);
+              setShowOverlay(false)
+            }} className="cancel-button">Cancel</button>
+            <button
+              disabled={isSigningOut}
+              onClick={signOut}
+              $grey={isSigningOut ? true : false}
+              className="delete-button"
+            >
+              Delete
+            </button>
+          </div>
+        </SignoutModal>
+      )}
+
       <TopContainer dir="rtl">
         {/* <Heading dir="rtl">إدارة البضائع</Heading>
         <ArrowContainer onClick={() => navigate(-1)}>
@@ -539,7 +643,14 @@ const Dashboard = () => {
             color={"var(--dark-primary-bg)"}
           />
         </ArrowContainer> */}
-        <SignOutButton disabled={isSigningOut} onClick={signOut} dir="rtl">
+        <SignOutButton
+          disabled={isSigningOut}
+          onClick={() => {
+            setshowSignoutModal(true);
+            setShowOverlay(true);
+          }}
+          dir="rtl"
+        >
           {isSigningOut ? "تسجيل الخروج…" : " تسجيل الخروج"}
 
           <SignoutIcon
@@ -570,29 +681,28 @@ const Dashboard = () => {
       />
 
       <ProductsWrapper>
-        {isLoading ?
+        {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
             <ProductCardSkeleton key={index} />
           ))
-        : error ?
+        ) : error ? (
           <p>an error occured {error}</p>
-        : filteredProducts.length === 0 ?
+        ) : filteredProducts.length === 0 ? (
           <p style={{ textAlign: "center" }} dir="rtl">
             لا توجد بضائع مطابقة للبحث
           </p>
-        : filteredProducts.map((product) => (
+        ) : (
+          filteredProducts.map((product) => (
             <ProductCard key={product.id}>
               <ContentBlock>
                 <ImageFigure>
-                  {product.image_url ?
-                    <img src={product.image_url} />
-                  : ""}
+                  {product.image_url ? <img src={product.image_url} /> : ""}
                 </ImageFigure>
                 <ProductName>
                   {" "}
-                  {product.name.length > 7 ?
-                    product.name.slice(0, 7) + "..."
-                  : product.name}{" "}
+                  {product.name.length > 7
+                    ? product.name.slice(0, 7) + "..."
+                    : product.name}{" "}
                 </ProductName>
               </ContentBlock>
 
@@ -630,10 +740,10 @@ const Dashboard = () => {
               </ContentBlock>
             </ProductCard>
           ))
-        }
+        )}
       </ProductsWrapper>
 
-      {showDeleteModal && selectedProductId ?
+      {showDeleteModal && selectedProductId ? (
         <DeleteModal
           productId={selectedProductId}
           refetch={refetch}
@@ -641,7 +751,7 @@ const Dashboard = () => {
           setShowDeleteModal={setShowDeleteModal}
           setShowOverlay={setShowOverlay}
         />
-      : null}
+      ) : null}
 
       <Overlay $isOpen={openFrom || showOverlay ? true : false} />
 
@@ -679,9 +789,11 @@ const Dashboard = () => {
 
         <ImageUploadContainer>
           <ImageInputLabel htmlFor="product-image-input">
-            {imageUrl ?
+            {imageUrl ? (
               <PreviewImage src={imageUrl} />
-            : <ImageIcon width={"60px"} height={"60px"} color={"gray"} />}
+            ) : (
+              <ImageIcon width={"60px"} height={"60px"} color={"gray"} />
+            )}
 
             <p style={{ color: "gray" }}>
               {imageUrl ? "الصورة الحالية" : "إنقر لإضافة صورة البضاعة"}
@@ -743,13 +855,13 @@ const Dashboard = () => {
           }}
         >
           {" "}
-          {isUploading || loadingEditProduct ?
-            isEditMode ?
-              "جارٍ حفظ التعديلات…"
-            : "جارٍ إضافة المنتج…"
-          : isEditMode ?
-            "حفظ التعديلات"
-          : "إضافة"}
+          {isUploading || loadingEditProduct
+            ? isEditMode
+              ? "جارٍ حفظ التعديلات…"
+              : "جارٍ إضافة المنتج…"
+            : isEditMode
+              ? "حفظ التعديلات"
+              : "إضافة"}
         </SubmitButton>
       </ProductForm>
     </Main>

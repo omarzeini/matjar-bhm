@@ -160,7 +160,7 @@ const CompanyPage = () => {
               <p className="label" dir="rtl">
                 الهاتف
               </p>
-              <p className="sub-label"> 212647183385+</p>
+              <p dir="ltr" className="sub-label"> +222 26 19 07 29 </p>
             </div>
           </InfoCard>
 
